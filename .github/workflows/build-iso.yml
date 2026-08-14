@@ -34,31 +34,25 @@ jobs:
           IMAGE="ghcr.io/${{ github.repository_owner }}/mrt-os:latest"
           IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
 
-          echo "1. Resmi Fedora Netinstall ISO indiriliyor..."
-          curl -fL -o base.iso https://mirror.vcu.edu/pub/gnu_linux/fedora/releases/41/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-41-1.4.iso || \
-          curl -fL -o base.iso https://mirror.telepoint.bg/fedora/releases/41/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-41-1.4.iso || \
-          curl -fL -o base.iso https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41-1.4.iso
+          echo "1. Resmi Fedora 44 Netinstall ISO indiriliyor..."
+          curl -fL -o base.iso https://mirror.vcu.edu/pub/gnu_linux/fedora/releases/44/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-44-1.1.iso || \
+          curl -fL -o base.iso https://download.fedoraproject.org/pub/fedora/linux/releases/44/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-44-1.1.iso || \
+          curl -fL -o base.iso https://mirror.telepoint.bg/fedora/releases/44/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-44-1.1.iso
 
-          echo "2. İndirilen ISO boyutu:"
-          ls -lh base.iso
-
-          echo "3. Kickstart yapılandırması oluşturuluyor..."
+          echo "2. Kickstart yapılandırması oluşturuluyor..."
           cat << EOF > mrt-installer.ks
           ostreecontainer --url=${IMAGE_LOWER} --no-signature-verification
           EOF
 
-          echo "4. mkksiso ile MRT-OS-KDE.iso üretiliyor..."
-          docker run --rm --privileged -v $(pwd):/work -w /work fedora:41 bash -c "dnf install -y lorax && mkksiso --ks mrt-installer.ks base.iso MRT-OS-KDE.iso"
-
-          echo "5. Üretilen ISO boyutu:"
-          ls -lh MRT-OS-KDE.iso
+          echo "3. mkksiso ile MRT-OS-KDE.iso üretiliyor..."
+          docker run --rm --privileged -v $(pwd):/work -w /work fedora:44 bash -c "dnf install -y lorax && mkksiso --ks mrt-installer.ks base.iso MRT-OS-KDE.iso"
 
       - name: ISO'yu İndirilebilir Hale Getir (GitHub Release)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0
           name: "MRT OS v1.0.0 (KDE Live)"
-          body: "Bulutta otomatik olarak oluşturulmuş MRT OS KDE Kurulum ISO'su."
+          body: "Bulutta otomatik olarak oluşturulmuş en güncel Fedora 44 tabanlı MRT OS KDE Kurulum ISO'su."
           files: MRT-OS-KDE.iso
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
