@@ -1,5 +1,5 @@
-# Temel olarak Fedora KDE (Kinoite) imajını alıyoruz
-FROM quay.io/fedora-ostree-desktops/kinoite:latest
+# Temel olarak Universal Blue Fedora KDE (Kinoite) imajını alıyoruz
+FROM ghcr.io/ublue-os/kinoite-main:latest
 
 # 1. MRT OS Sistem Adını Ayarla
 RUN sed -i 's/^NAME=.*/NAME="MRT OS"/' /usr/lib/os-release && \
