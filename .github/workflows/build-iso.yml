@@ -30,7 +30,7 @@ jobs:
           cd fedora-kickstarts
           ksflatten -c fedora-live-kde.ks -o mrt-live.ks
 
-          # 3. Sanal disk boyutunu 18 GB'a genişlet (Wine ve KDE rahatça sığsın)
+          # 3. Sanal disk boyutunu 18 GB'a genişlet
           sed -i '/^part \//d' mrt-live.ks
           sed -i '/^clearpart/a part / --size=18000 --fstype=ext4' mrt-live.ks
 
@@ -102,12 +102,9 @@ jobs:
         run: |
           ls -lh MRT-OS-v1.0.1.iso
 
-      - name: Canlı ISO'yu Releases Sekmesine Yükle
-        uses: softprops/action-gh-release@v2
+      - name: Canlı ISO'yu İndirilebilir Yap (GitHub Artifacts - Sınırsız Boyut)
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v1.0.1
-          name: "MRT OS v1.0.1 (Canlı Masaüstü / Live KDE)"
-          body: "Bilgisayara kurmadan doğrudan masaüstünü deneyebileceğiniz resmi MRT OS v1.0.1 Live ISO kalıbı."
-          files: MRT-OS-v1.0.1.iso
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: MRT-OS-v1.0.1-Live-KDE
+          path: MRT-OS-v1.0.1.iso
+          retention-days: 90
