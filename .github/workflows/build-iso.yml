@@ -16,78 +16,87 @@ jobs:
       - name: Kodu Çek
         uses: actions/checkout@v4
 
-      - name: Canlı Masaüstü ISO'sunu Bulutta Derle (Fedora LiveCD)
+      - name: Derleme Betigini (build.sh) Hazirla
         run: |
-          docker run --rm --privileged -v $(pwd):/work -w /work fedora:41 bash -c "
-            # 1. Gerekli araçları yükle
-            dnf install -y livecd-tools pykickstart git lorax-lmc-novirt
+          cat << 'SCRIPT' > build.sh
+          #!/bin/bash
+          set -e
 
-            # 2. Resmi KDE Live şablonunu çek
-            git clone https://pagure.io/fedora-kickstarts.git -b f41
-            cd fedora-kickstarts
-            ksflatten -c fedora-live-kde.ks -o mrt-live.ks
+          # 1. Gerekli araçları yükle
+          dnf install -y livecd-tools pykickstart git lorax-lmc-novirt
 
-            # 3. Paketleri ekle (Wine, GNOME Software, Flatpak vb.)
-            sed -i 's/^%packages.*/%packages --ignoremissing/' mrt-live.ks
-            sed -i '/^%packages/a dracut-live\nwine\nwine-core\nwine-common\nwinetricks\ncabextract\ngnome-software\nflatpak' mrt-live.ks
-            sed -i '/kde-spin-initial-setup/d' mrt-live.ks
+          # 2. Şablonu indir ve birleştir
+          git clone https://pagure.io/fedora-kickstarts.git -b f41
+          cd fedora-kickstarts
+          ksflatten -c fedora-live-kde.ks -o mrt-live.ks
 
-            # 4. MRT OS v1.0.1 ve Canlı Masaüstü Ayarlarını Ekle
-            cat << 'EOF' >> mrt-live.ks
+          # 3. Paketleri ekle
+          sed -i 's/^%packages.*/%packages --ignoremissing/' mrt-live.ks
+          sed -i '/^%packages/a dracut-live\nwine\nwine-core\nwine-common\nwinetricks\ncabextract\ngnome-software\nflatpak' mrt-live.ks
+          sed -i '/kde-spin-initial-setup/d' mrt-live.ks
 
-            %post
-            # Sistem Adını ve Sürümünü MRT OS v1.0.1 Yap
-            sed -i 's/^NAME=.*/NAME=\"MRT OS\"/' /etc/os-release
-            sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME=\"MRT OS v1.0.1 (KDE Live Edition)\"/' /etc/os-release
-            sed -i 's/^VERSION=.*/VERSION=\"1.0.1\"/' /etc/os-release
-            sed -i 's/^VERSION_ID=.*/VERSION_ID=\"1.0.1\"/' /etc/os-release
-            sed -i 's/^ID=.*/ID=mrtos/' /etc/os-release
-            sed -i 's/^ID_LIKE=.*/ID_LIKE=\"fedora\"/' /etc/os-release
+          # 4. MRT OS v1.0.1 Yapılandırmasını Ekle
+          cat << 'EOF' >> mrt-live.ks
 
-            # Flathub Deposunu Ekle
-            flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          %post
+          sed -i 's/^NAME=.*/NAME="MRT OS"/' /etc/os-release
+          sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="MRT OS v1.0.1 (KDE Live Edition)"/' /etc/os-release
+          sed -i 's/^VERSION=.*/VERSION="1.0.1"/' /etc/os-release
+          sed -i 's/^VERSION_ID=.*/VERSION_ID="1.0.1"/' /etc/os-release
+          sed -i 's/^ID=.*/ID=mrtos/' /etc/os-release
+          sed -i 's/^ID_LIKE=.*/ID_LIKE="fedora"/' /etc/os-release
 
-            # .EXE Çift Tıklama Başlatıcısını Oluştur
-            mkdir -p /usr/share/applications /etc/xdg
-            cat << 'APP' > /usr/share/applications/wine-runner.desktop
-            [Desktop Entry]
-            Type=Application
-            Name=Wine Windows Program Loader
-            Comment=Windows uygulamalarını (.exe) çalıştırır
-            Exec=wine %f
-            MimeType=application/x-ms-dos-executable;application/x-msi;application/x-msdownload;application/x-dosexec;
-            Icon=wine
-            NoDisplay=false
-            StartupNotify=true
-            Terminal=false
-            Categories=Utility;System;
-            APP
+          flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-            cat << 'MIME' >> /etc/xdg/mimeapps.list
-            [Default Applications]
-            application/x-ms-dos-executable=wine-runner.desktop
-            application/x-msi=wine-runner.desktop
-            application/x-msdownload=wine-runner.desktop
-            application/x-dosexec=wine-runner.desktop
+          mkdir -p /usr/share/applications /etc/xdg
+          cat << 'APP' > /usr/share/applications/wine-runner.desktop
+          [Desktop Entry]
+          Type=Application
+          Name=Wine Windows Program Loader
+          Comment=Windows uygulamalarını (.exe) çalıştırır
+          Exec=wine %f
+          MimeType=application/x-ms-dos-executable;application/x-msi;application/x-msdownload;application/x-dosexec;
+          Icon=wine
+          NoDisplay=false
+          StartupNotify=true
+          Terminal=false
+          Categories=Utility;System;
+          APP
 
-            [Added Associations]
-            application/x-ms-dos-executable=wine-runner.desktop;
-            application/x-msi=wine-runner.desktop;
-            application/x-msdownload=wine-runner.desktop;
-            application/x-dosexec=wine-runner.desktop;
-            MIME
+          cat << 'MIME' >> /etc/xdg/mimeapps.list
+          [Default Applications]
+          application/x-ms-dos-executable=wine-runner.desktop
+          application/x-msi=wine-runner.desktop
+          application/x-msdownload=wine-runner.desktop
+          application/x-dosexec=wine-runner.desktop
 
-            update-desktop-database /usr/share/applications/
-            %end
-            EOF
+          [Added Associations]
+          application/x-ms-dos-executable=wine-runner.desktop;
+          application/x-msi=wine-runner.desktop;
+          application/x-msdownload=wine-runner.desktop;
+          application/x-dosexec=wine-runner.desktop;
+          MIME
 
-            # 5. Canlı Masaüstü ISO'sunu İnşa Et
-            echo 'MRT-OS-v1.0.1.iso üretiliyor, bu işlem 10-15 dakika sürebilir...'
-            livecd-creator --config=mrt-live.ks --fslabel=MRT-OS-v1.0.1 --cache=/var/cache/live
-            
-            # Çıkan dosyayı ana dizine taşı
-            mv MRT-OS-v1.0.1.iso /work/MRT-OS-v1.0.1.iso
-          "
+          update-desktop-database /usr/share/applications/
+          %end
+          EOF
+
+          # 5. Canlı Masaüstü ISO'sunu Üret
+          echo "livecd-creator ile MRT-OS-v1.0.1.iso inşa ediliyor..."
+          livecd-creator --config=mrt-live.ks --fslabel=MRT-OS-v1.0.1 --cache=/var/cache/live
+
+          mv MRT-OS-v1.0.1.iso /work/MRT-OS-v1.0.1.iso
+          SCRIPT
+
+          chmod +x build.sh
+
+      - name: Canlı Masaüstü ISO'sunu Bulutta Derle (Fedora Container)
+        run: |
+          docker run --rm --privileged -v $(pwd):/work -w /work fedora:41 /work/build.sh
+
+      - name: Üretilen ISO Boyutunu Kontrol Et
+        run: |
+          ls -lh MRT-OS-v1.0.1.iso
 
       - name: Canlı ISO'yu Releases Sekmesine Yükle
         uses: softprops/action-gh-release@v2
