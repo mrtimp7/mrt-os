@@ -19,16 +19,16 @@ jobs:
 
       - name: GHCR Konteyner Deposuna Giriş Yap
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
 
-      - name: MRT OS İmajını İnşa Et (Podman)
+      - name: MRT OS İmajını İnşa Et ve Gönder
         run: |
           IMAGE="ghcr.io/${{ github.repository_owner }}/mrt-os:latest"
           IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
           
-          # Katman sınırına takılmadan Podman ile derle
-          podman build -t "$IMAGE_LOWER" .
-          podman push "$IMAGE_LOWER"
+          # Root deposuna inşa et ki ISO üretici doğrudan erişebilsin
+          sudo podman build -t "$IMAGE_LOWER" .
+          sudo podman push "$IMAGE_LOWER"
 
       - name: Kurulabilir ISO İmajını Üret (bootc)
         run: |
@@ -42,6 +42,9 @@ jobs:
             quay.io/centos-bootc/bootc-image-builder:latest \
             --type iso \
             "$IMAGE_LOWER"
+
+          # Oluşan ISO'nun izinlerini GitHub Release için aç
+          sudo chmod -R 777 output
 
       - name: ISO'yu İndirilebilir Hale Getir (GitHub Release)
         uses: softprops/action-gh-release@v2
