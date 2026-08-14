@@ -1,4 +1,4 @@
-# Temel olarak resmi Fedora KDE (Kinoite) imajını alıyoruz
+# Temel olarak Fedora KDE (Kinoite) imajını alıyoruz
 FROM quay.io/fedora-ostree-desktops/kinoite:latest
 
 # 1. MRT OS Sistem Adını Ayarla
@@ -15,36 +15,12 @@ RUN dnf install -y \
     cabextract && \
     dnf clean all
 
-# 3. .EXE Dosyalarını Çift Tıklayınca Açacak Başlatıcıyı Ekle
+# 3. .EXE Çift Tıklama Başlatıcısını Oluştur
 RUN mkdir -p /usr/share/applications /etc/xdg && \
-    cat << 'EOF' > /usr/share/applications/wine-runner.desktop
-[Desktop Entry]
-Type=Application
-Name=Wine Windows Program Loader
-Comment=Windows uygulamalarını (.exe) çalıştırır
-Exec=wine %f
-MimeType=application/x-ms-dos-executable;application/x-msi;application/x-msdownload;application/x-dosexec;
-Icon=wine
-NoDisplay=false
-StartupNotify=true
-Terminal=false
-Categories=Utility;System;
-EOF
+    printf "[Desktop Entry]\nType=Application\nName=Wine Windows Program Loader\nComment=Windows uygulamalarını (.exe) çalıştırır\nExec=wine %%f\nMimeType=application/x-ms-dos-executable;application/x-msi;application/x-msdownload;application/x-dosexec;\nIcon=wine\nNoDisplay=false\nStartupNotify=true\nTerminal=false\nCategories=Utility;System;\n" > /usr/share/applications/wine-runner.desktop
 
 # 4. EXE / MSI Dosyalarını Wine ile Eşleştir
-RUN cat << 'EOF' >> /etc/xdg/mimeapps.list
-[Default Applications]
-application/x-ms-dos-executable=wine-runner.desktop
-application/x-msi=wine-runner.desktop
-application/x-msdownload=wine-runner.desktop
-application/x-dosexec=wine-runner.desktop
-
-[Added Associations]
-application/x-ms-dos-executable=wine-runner.desktop;
-application/x-msi=wine-runner.desktop;
-application/x-msdownload=wine-runner.desktop;
-application/x-dosexec=wine-runner.desktop;
-EOF
+RUN printf "[Default Applications]\napplication/x-ms-dos-executable=wine-runner.desktop\napplication/x-msi=wine-runner.desktop\napplication/x-msdownload=wine-runner.desktop\napplication/x-dosexec=wine-runner.desktop\n\n[Added Associations]\napplication/x-ms-dos-executable=wine-runner.desktop;\napplication/x-msi=wine-runner.desktop;\napplication/x-msdownload=wine-runner.desktop;\napplication/x-dosexec=wine-runner.desktop;\n" >> /etc/xdg/mimeapps.list
 
 # 5. Flathub Mağaza Deposunu Ekle
 RUN flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
