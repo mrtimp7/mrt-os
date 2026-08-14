@@ -34,8 +34,10 @@ jobs:
           IMAGE="ghcr.io/${{ github.repository_owner }}/mrt-os:latest"
           IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
 
-          echo "1. Resmi Fedora Netinstall ISO indiriliyor..."
-          curl -fL -o base.iso https://download.fedoraproject.org/pub/fedora/linux/releases/41/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-41-1.4.iso
+          echo "1. Resmi Fedora Netinstall ISO indiriliyor (Doğrudan Aynalar)..."
+          curl -fL -o base.iso https://mirror.vcu.edu/pub/gnu_linux/fedora/releases/41/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-41-1.4.iso || \
+          curl -fL -o base.iso https://mirror.telepoint.bg/fedora/releases/41/Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-41-1.4.iso || \
+          curl -fL -o base.iso https://download.fedoraproject.org/pub/fedora/linux/releases/41/Server/x86_64/iso/Fedora-Server-netinst-x86_64-41-1.4.iso
 
           echo "2. İndirilen ISO boyutu kontrol ediliyor (yaklaşık 900 MB olmalı):"
           ls -lh base.iso
