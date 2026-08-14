@@ -29,17 +29,21 @@ jobs:
           podman build -t "$IMAGE_LOWER" .
           podman push "$IMAGE_LOWER"
 
-      - name: Hızlı MRT OS ISO İmajını Üret (Bazzite/uBlue Motoru)
-        uses: jasonn3/build-container-installer@main
-        id: build
-        with:
-          arch: x86_64
-          image_name: mrt-os
-          image_repo: ghcr.io/${{ github.repository_owner }}
-          image_tag: latest
-          version: 41
-          variant: Kinoite
-          iso_name: MRT-OS-KDE.iso
+      - name: MRT OS Kurulum ISO'sunu Üret (mkksiso)
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/mrt-os:latest"
+          IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
+
+          echo "1. Resmi Fedora Kinoite ISO indiriliyor..."
+          curl -Lo kinoite-base.iso https://download.fedoraproject.org/pub/fedora/linux/releases/41/Kinoite/x86_64/iso/Fedora-Kinoite-ostree-x86_64-41-1.4.iso
+
+          echo "2. Kickstart dosyası oluşturuluyor..."
+          cat << EOF > mrt-installer.ks
+          ostreecontainer --url=${IMAGE_LOWER} --no-signature-verification
+          EOF
+
+          echo "3. mkksiso ile MRT-OS-KDE.iso hazırlanıyor..."
+          docker run --rm -v $(pwd):/work -w /work fedora:41 bash -c "dnf install -y lorax && mkksiso --ks mrt-installer.ks kinoite-base.iso MRT-OS-KDE.iso"
 
       - name: ISO'yu İndirilebilir Hale Getir (GitHub Release)
         uses: softprops/action-gh-release@v2
@@ -47,8 +51,6 @@ jobs:
           tag_name: v1.0.0
           name: "MRT OS v1.0.0 (KDE Live)"
           body: "Bulutta otomatik olarak oluşturulmuş MRT OS KDE Kurulum ISO'su."
-          files: |
-            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}
-            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
+          files: MRT-OS-KDE.iso
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
