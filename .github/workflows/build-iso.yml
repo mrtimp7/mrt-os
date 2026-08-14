@@ -12,40 +12,43 @@ jobs:
     permissions:
       contents: write
       packages: write
-      id-token: write
 
     steps:
       - name: Kodu Çek
         uses: actions/checkout@v4
 
-      - name: Konteynere Giriş Yap
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: MRT OS İmajını İnşa Et
+      - name: GHCR Konteyner Deposuna Giriş Yap
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/mrt-os:latest .
-          docker push ghcr.io/${{ github.repository_owner }}/mrt-os:latest
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: MRT OS İmajını İnşa Et (Podman)
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/mrt-os:latest"
+          IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          
+          # Katman sınırına takılmadan Podman ile derle
+          podman build -t "$IMAGE_LOWER" .
+          podman push "$IMAGE_LOWER"
 
       - name: Kurulabilir ISO İmajını Üret (bootc)
         run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/mrt-os:latest"
+          IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
+
           mkdir -p output
-          docker run --rm --privileged \
+          sudo podman run --rm --privileged \
             -v /var/lib/containers/storage:/var/lib/containers/storage \
             -v $(pwd)/output:/output \
             quay.io/centos-bootc/bootc-image-builder:latest \
             --type iso \
-            ghcr.io/${{ github.repository_owner }}/mrt-os:latest
+            "$IMAGE_LOWER"
 
       - name: ISO'yu İndirilebilir Hale Getir (GitHub Release)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0
-          name: "MRT OS v1.0.0"
-          body: "Otomatik olarak oluşturulmuş MRT OS KDE Live Kurulum ISO'su."
+          name: "MRT OS v1.0.0 (KDE Live)"
+          body: "Bulutta otomatik olarak oluşturulmuş MRT OS KDE Kurulum ISO'su."
           files: output/bootiso/*.iso
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
