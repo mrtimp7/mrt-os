@@ -30,12 +30,16 @@ jobs:
           cd fedora-kickstarts
           ksflatten -c fedora-live-kde.ks -o mrt-live.ks
 
-          # 3. Paketleri ekle
+          # 3. Sanal disk boyutunu 18 GB'a genişlet (Wine ve KDE rahatça sığsın)
+          sed -i '/^part \//d' mrt-live.ks
+          sed -i '/^clearpart/a part / --size=18000 --fstype=ext4' mrt-live.ks
+
+          # 4. Paketleri ekle
           sed -i 's/^%packages.*/%packages --ignoremissing/' mrt-live.ks
           sed -i '/^%packages/a dracut-live\nwine\nwine-core\nwine-common\nwinetricks\ncabextract\ngnome-software\nflatpak' mrt-live.ks
           sed -i '/kde-spin-initial-setup/d' mrt-live.ks
 
-          # 4. MRT OS v1.0.1 Yapılandırmasını Ekle
+          # 5. MRT OS v1.0.1 Yapılandırmasını Ekle
           cat << 'EOF' >> mrt-live.ks
 
           %post
@@ -81,7 +85,7 @@ jobs:
           %end
           EOF
 
-          # 5. Canlı Masaüstü ISO'sunu Üret
+          # 6. Canlı Masaüstü ISO'sunu Üret
           echo "livecd-creator ile MRT-OS-v1.0.1.iso inşa ediliyor..."
           livecd-creator --config=mrt-live.ks --fslabel=MRT-OS-v1.0.1 --cache=/var/cache/live
 
