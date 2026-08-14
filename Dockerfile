@@ -1,9 +1,9 @@
-# Temel olarak Universal Blue Fedora KDE (Kinoite) imajını alıyoruz
-FROM ghcr.io/ublue-os/kinoite-main:latest
+# En güncel Fedora 44 tabanlı Universal Blue KDE imajı
+FROM ghcr.io/ublue-os/kinoite-main:44
 
 # 1. MRT OS Sistem Adını Ayarla
 RUN sed -i 's/^NAME=.*/NAME="MRT OS"/' /usr/lib/os-release && \
-    sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="MRT OS (KDE Edition)"/' /usr/lib/os-release && \
+    sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="MRT OS 44 (KDE Edition)"/' /usr/lib/os-release && \
     sed -i 's/^ID=.*/ID=mrtos/' /usr/lib/os-release
 
 # 2. İstenen Paketleri Yükle (Wine, GNOME Software, Flatpak)
