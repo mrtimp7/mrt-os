@@ -19,32 +19,27 @@ jobs:
 
       - name: GHCR Konteyner Deposuna Giriş Yap
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: MRT OS İmajını İnşa Et ve Gönder
         run: |
           IMAGE="ghcr.io/${{ github.repository_owner }}/mrt-os:latest"
           IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
           
-          # Root deposuna inşa et ki ISO üretici doğrudan erişebilsin
-          sudo podman build -t "$IMAGE_LOWER" .
-          sudo podman push "$IMAGE_LOWER"
+          podman build -t "$IMAGE_LOWER" .
+          podman push "$IMAGE_LOWER"
 
-      - name: Kurulabilir ISO İmajını Üret (bootc)
-        run: |
-          IMAGE="ghcr.io/${{ github.repository_owner }}/mrt-os:latest"
-          IMAGE_LOWER=$(echo "$IMAGE" | tr '[:upper:]' '[:lower:]')
-
-          mkdir -p output
-          sudo podman run --rm --privileged \
-            -v /var/lib/containers/storage:/var/lib/containers/storage \
-            -v $(pwd)/output:/output \
-            quay.io/centos-bootc/bootc-image-builder:latest \
-            --type iso \
-            "$IMAGE_LOWER"
-
-          # Oluşan ISO'nun izinlerini GitHub Release için aç
-          sudo chmod -R 777 output
+      - name: Hızlı MRT OS ISO İmajını Üret (Bazzite/uBlue Motoru)
+        uses: jasonn3/build-container-installer@main
+        id: build
+        with:
+          arch: x86_64
+          image_name: mrt-os
+          image_repo: ghcr.io/${{ github.repository_owner }}
+          image_tag: latest
+          version: 41
+          variant: Kinoite
+          iso_name: MRT-OS-KDE.iso
 
       - name: ISO'yu İndirilebilir Hale Getir (GitHub Release)
         uses: softprops/action-gh-release@v2
@@ -52,6 +47,8 @@ jobs:
           tag_name: v1.0.0
           name: "MRT OS v1.0.0 (KDE Live)"
           body: "Bulutta otomatik olarak oluşturulmuş MRT OS KDE Kurulum ISO'su."
-          files: output/bootiso/*.iso
+          files: |
+            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}
+            ${{ steps.build.outputs.iso_path }}/${{ steps.build.outputs.iso_name }}-CHECKSUM
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
