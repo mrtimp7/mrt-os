@@ -102,9 +102,48 @@ jobs:
         run: |
           ls -lh MRT-OS-v1.0.1.iso
 
-      - name: Canlı ISO'yu İndirilebilir Yap (GitHub Artifacts - Sınırsız Boyut)
-        uses: actions/upload-artifact@v4
+      - name: Canlı ISO'yu GitHub Releases Olarak Yayınla (Eski Sürümleri Temizle)
+        uses: softprops/action-gh-release@v2
         with:
-          name: MRT-OS-v1.0.1-Live-KDE
-          path: MRT-OS-v1.0.1.iso
-          retention-days: 90
+          tag_name: v1.0.1
+          name: MRT OS v1.0.1 - Live KDE ISO
+          body: |
+            ## MRT OS v1.0.1 - Fedora 44 Tabanlı KDE Live ISO
+            
+            ### ✨ Özellikler
+            - 🐧 **Fedora 44** tabanlı modern KDE Plasma masaüstü
+            - 🍷 **Wine & Winetricks** önceden yüklü (Windows uygulama desteği)
+            - 📦 **Flatpak & Flathub** entegrasyonu
+            - 🖱️ **.EXE dosyalarını çift tıklayarak çalıştırma** desteği
+            - 🎨 Özelleştirilmiş "MRT OS" marka kimliği
+            
+            ### 📥 Kurulum
+            1. ISO dosyasını indirin
+            2. USB belleğe yazdırın (Rufus, BalenaEtcher veya dd kullanabilirsiniz)
+            3. Bilgisayarınızı USB'den başlatın
+            4. Canlı sistem olarak deneyin veya diske kurun
+            
+            ### 🔧 Teknik Detaylar
+            - **Taban:** Universal Blue Kinoite (Fedora 44)
+            - **Masaüstü:** KDE Plasma
+            - **Boyut:** ~3 GB
+            - **Sürüm:** 1.0.1
+            
+            > ⚠️ **Not:** Bu bir canlı (live) ISO'dur. Sistem gereksinimlerini karşıladığınızdan emin olun.
+          files: |
+            MRT-OS-v1.0.1.iso
+          prerelease: false
+          make_latest: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Eski Release Sürümlerini Temizle
+        run: |
+          echo "Eski sürümler temizleniyor, sadece en son sürüm (v1.0.1) kalacak..."
+          gh release delete v1.0.0 --yes --cleanup-tag || true
+          gh release delete v1.0.0-beta --yes --cleanup-tag || true
+          gh release delete v0.9.9 --yes --cleanup-tag || true
+          gh release delete test-release --yes --cleanup-tag || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
