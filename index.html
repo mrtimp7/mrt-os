@@ -1,0 +1,305 @@
+--- website/index.html (原始)
+
+
++++ website/index.html (修改后)
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRT OS - Resmi İndirme Sayfası</title>
+    <style>
+        :root {
+            --primary: #1e90ff; /* KDE Mavisi */
+            --dark: #121212;
+            --card-bg: #1e1e1e;
+            --text: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #00d2be;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header / Hero Section */
+        header {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #2a2a2a 0%, #121212 100%);
+            padding: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+
+        .status-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-active { color: #4caf50; border-color: #4caf50; }
+        .status-ended { color: #f44336; border-color: #f44336; }
+
+        /* Download Button */
+        .download-btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.2s, background-color 0.2s;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn:hover {
+            background-color: #167ac9;
+            transform: translateY(-2px);
+        }
+
+        .download-info {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Features Section */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .feature-desc {
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px;
+            background-color: #0a0a0a;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Loading State */
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .subtitle { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="status-badge" id="serviceStatus">Hizmet durumu kontrol ediliyor...</div>
+        <h1>MRT OS</h1>
+        <p class="subtitle">Kararlı. Hızlı. Özelleştirilmiş.</p>
+
+        <button id="downloadBtn" class="download-btn loading" onclick="startDownload()">
+            <span>⬇️</span> <span id="btnText">Sürüm Yükleniyor...</span>
+        </button>
+        <p class="download-info" id="versionInfo"></p>
+    </header>
+
+    <div class="container">
+        <h2 style="text-align: center; margin-bottom: 20px;">Özellikler</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <h3 class="feature-title">Fedora 44 Tabanlı</h3>
+                <p class="feature-desc">En güncel çekirdek ve paketlerle gelen, Universal Blue Kinoite altyapısına sahip kararlı bir temel.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <h3 class="feature-title">Wine & Oyun Desteği</h3>
+                <p class="feature-desc">Windows uygulamalarını ve oyunlarını çalıştırmak için önceden yapılandırılmış Wine ve Winetricks desteği.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3 class="feature-title">Flatpak Entegrasyonu</h3>
+                <p class="feature-desc">Binlerce uygulamaya tek tıkla erişin. Flathub deposu varsayılan olarak aktif gelir.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">EXE Başlatıcı</h3>
+                <p class="feature-desc">Windows .exe dosyalarına çift tıklayarak doğrudan çalıştırma kolaylığı.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 MRT OS Projesi. Tüm hakları saklıdır.</p>
+        <p style="margin-top: 10px; font-size: 0.8rem;">GitHub üzerinden açık kaynak olarak geliştirilmektedir.</p>
+    </footer>
+
+    <script>
+        // Yapılandırma
+        const GITHUB_OWNER = 'mrtimp7';
+        const GITHUB_REPO = 'mrt-os';
+
+        // Tarih Ayarları
+        const RELEASE_DATE = new Date('2026-08-13T00:00:00');
+        const END_DATE = new Date('2026-08-15T23:59:59');
+
+        // Bugünün tarihini al (Simülasyon için sistem saatini kullanır)
+        const today = new Date();
+
+        // Hizmet Durumu Kontrolü
+        function checkServiceStatus() {
+            const statusElement = document.getElementById('serviceStatus');
+
+            if (today < RELEASE_DATE) {
+                statusElement.textContent = "Yayınlanmadı (Bekleniyor: 13 Ağustos 2026)";
+                statusElement.className = "status-badge";
+                return false;
+            } else if (today >= RELEASE_DATE && today <= END_DATE) {
+                statusElement.textContent = "✅ Aktif Hizmet (15 Ağustos 2026'ya kadar)";
+                statusElement.className = "status-badge status-active";
+                return true;
+            } else {
+                statusElement.textContent = "⚠️ Hizmet Süresi Doldu (15 Ağustos 2026)";
+                statusElement.className = "status-badge status-ended";
+                return false;
+            }
+        }
+
+        // En son sürümü GitHub'dan çek
+        async function fetchLatestRelease() {
+            const btn = document.getElementById('downloadBtn');
+            const btnText = document.getElementById('btnText');
+            const versionInfo = document.getElementById('versionInfo');
+            const isActive = checkServiceStatus();
+
+            if (!isActive) {
+                btn.classList.remove('loading');
+                btnText.textContent = "İndirme Kapalı";
+                btn.style.backgroundColor = "#555";
+                btn.onclick = null;
+                versionInfo.textContent = "Hizmet süresi dışında indirme yapılamaz.";
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`);
+
+                if (!response.ok) throw new Error('Sürüm bulunamadı');
+
+                const data = await response.json();
+                const versionTag = data.tag_name || 'v1.0.1';
+
+                // ISO dosyasını bul
+                const isoAsset = data.assets.find(asset => asset.name.endsWith('.iso'));
+
+                if (isoAsset) {
+                    // Butonu güncelle
+                    btn.classList.remove('loading');
+                    btnText.textContent = `MRT OS ${versionTag} İndir`;
+                    versionInfo.textContent = `Dosya Boyutu: ${(isoAsset.size / (1024*1024)).toFixed(2)} MB • Yayınlanma: ${new Date(isoAsset.created_at).toLocaleDateString('tr-TR')}`;
+
+                    // İndirme fonksiyonunu ata
+                    window.latestIsoUrl = isoAsset.browser_download_url;
+                } else {
+                    throw new Error('ISO dosyası bulunamadı');
+                }
+
+            } catch (error) {
+                console.error(error);
+                btn.classList.remove('loading');
+                btnText.textContent = "İndirme Hatası";
+                versionInfo.textContent = "GitHub'dan sürüm bilgisi alınamadı. Lütfen GitHub Releases sayfasını kontrol edin.";
+                btn.style.backgroundColor = "#d32f2f";
+            }
+        }
+
+        // Doğrudan indirme başlat
+        function startDownload() {
+            if (window.latestIsoUrl) {
+                // Yeni sekmede doğrudan download linkini aç
+                // GitHub bazen direkt link yerine release sayfasına yönlendirebilir,
+                // ancak modern tarayıcılar ve GitHub API genellikle doğrudan indirmeyi tetikler.
+                window.location.href = window.latestIsoUrl;
+            }
+        }
+
+        // Sayfa yüklendiğinde çalıştır
+        document.addEventListener('DOMContentLoaded', fetchLatestRelease);
+    </script>
+</body>
+</html>
